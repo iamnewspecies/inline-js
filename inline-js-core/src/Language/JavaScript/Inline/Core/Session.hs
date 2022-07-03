@@ -125,7 +125,9 @@ newSession Config {..} = do
             JSEvalResponse {..} -> do
               let _sp = word64ToStablePtr jsEvalResponseId
               _inbox <- deRefStablePtr _sp
-              atomically $ putTMVar _inbox jsEvalResponseContent
+              case jsEvalResponseContent of
+                Left err -> atomically $ putTMVar _inbox $ Left $ error $ show $ err
+                Right _ -> atomically $ putTMVar _inbox jsEvalResponseContent
             HSEvalRequest {..} -> do
               _ <-
                 forkFinally
